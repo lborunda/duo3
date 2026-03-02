@@ -13,8 +13,11 @@ import type { Trip, TripHighlight, Preferences, Message } from './types';
 import { PREFERENCES_KEY, TRIPS_KEY, ACTIVE_TRIP_ID_KEY } from './constants';
 
 export default function App() {
+  const [isInitialized, setIsInitialized] = useState(false);
   const [view, setView] = useState<'camera' | 'tripBook' | 'settings'>('camera');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // ... existing state ...
   const [conversation, setConversation] = useState<Message[]>([]);
   const [lastCapture, setLastCapture] = useState<string | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -35,6 +38,11 @@ export default function App() {
       translation: 0.1,
     },
     language: 'en-US',
+    translation: {
+      enabled: false,
+      inputLanguage: 'en-US',
+      outputLanguage: 'en-US',
+    },
   });
   const [notification, setNotification] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -53,6 +61,9 @@ export default function App() {
 
   // ===== init prefs/trips =====
   useEffect(() => {
+    // Mark as initialized immediately to prevent white screen
+    setIsInitialized(true);
+    
     try {
       const storedPrefs = localStorage.getItem(PREFERENCES_KEY);
       if (storedPrefs) {
@@ -269,6 +280,17 @@ export default function App() {
         return <CameraView onCapture={handleCapture} onViewChange={setView} />;
     }
   };
+
+  if (!isInitialized) {
+    return (
+      <div className="h-screen w-screen bg-stone-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-stone-500">Initializing DUO...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (showWelcome) return <WelcomeOverlay onStart={handleStart} />;
 

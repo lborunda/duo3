@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
-import { SaveIcon, CloseIcon, MicIcon, SoundOnIcon, SoundOffIcon } from './icons';
+import { SaveIcon, CloseIcon, MicIcon, SoundOnIcon, SoundOffIcon, TranslateIcon } from './icons';
 import type { Message } from '../types';
 import { useIntermittentVibration } from '../hooks/useIntermittentVibration';
 
@@ -15,6 +15,9 @@ interface ResponseDisplayProps {
   onToggleMute: () => void;
   onToggleListening: () => void;
   isListening: boolean;
+  isTranslating?: boolean;
+  onToggleTranslation?: () => void;
+  translationEnabled?: boolean;
 }
 
 
@@ -458,10 +461,21 @@ export const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
             >
               <SaveIcon className="w-5 h-5" />
             </button>
+            
+            {translationEnabled && (
+                <button
+                    onClick={onToggleTranslation}
+                    className={`flex-shrink-0 font-bold py-3 px-4 rounded-lg transition-colors ${isTranslating ? 'bg-blue-500 animate-pulse text-white' : 'bg-stone-200/20 text-white hover:bg-stone-200/40'}`}
+                    disabled={isLoading}
+                >
+                    <TranslateIcon className="w-5 h-5" />
+                </button>
+            )}
+
             <button
               onClick={onToggleListening}
               className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3 px-4 rounded-lg transition-colors ${isListening ? 'bg-red-500 animate-pulse' : 'bg-orange-500 hover:bg-orange-600'}`}
-              disabled={isLoading}
+              disabled={isLoading || isTranslating}
             >
               <MicIcon className="w-5 h-5" />
               <span>{isListening ? 'Listening...' : 'Ask a follow-up'}</span>

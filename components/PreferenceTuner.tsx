@@ -128,6 +128,61 @@ export const PreferenceTuner: React.FC<PreferenceTunerProps> = ({ preferences, o
           />
         </div>
       </div>
+
+      {/* Translation Settings */}
+      <div>
+        <h3 className="text-lg font-bold text-stone-800 px-4">Translation</h3>
+        <p className="text-sm text-stone-500 mb-4 px-4">Configure live translation and language preferences.</p>
+        
+        <div className="bg-white p-4 rounded-xl shadow space-y-4 mx-4">
+            <div className="flex items-center justify-between">
+                <span className="font-medium text-stone-700">Live Translation</span>
+                <button 
+                    onClick={() => onPreferencesChange({
+                        ...preferences,
+                        translation: { ...preferences.translation, enabled: !preferences.translation.enabled }
+                    })}
+                    className={`w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative ${preferences.translation?.enabled ? 'bg-orange-500' : 'bg-stone-300'}`}
+                >
+                    <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform duration-200 ${preferences.translation?.enabled ? 'left-7' : 'left-1'}`}></div>
+                </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-xs font-semibold text-stone-500 mb-1">Input Language (Mic)</label>
+                    <select 
+                        value={preferences.translation?.inputLanguage || 'en-US'}
+                        onChange={(e) => onPreferencesChange({
+                            ...preferences,
+                            translation: { ...preferences.translation, inputLanguage: e.target.value }
+                        })}
+                        className="w-full p-2 rounded-lg border border-stone-200 bg-stone-50 text-sm"
+                    >
+                        <option value="en-US">English</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="it-IT">Italian</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-semibold text-stone-500 mb-1">Output Language (DUO)</label>
+                    <select 
+                        value={preferences.translation?.outputLanguage || 'en-US'}
+                        onChange={(e) => onPreferencesChange({
+                            ...preferences,
+                            language: e.target.value, // Sync main language
+                            translation: { ...preferences.translation, outputLanguage: e.target.value }
+                        })}
+                        className="w-full p-2 rounded-lg border border-stone-200 bg-stone-50 text-sm"
+                    >
+                        <option value="en-US">English</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="it-IT">Italian</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+      </div>
     </div>
   );
 };

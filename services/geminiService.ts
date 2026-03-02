@@ -167,3 +167,33 @@ Refer to the original image again and elaborate on the user's follow-up, using n
     return 'No response from DUO AI.';
   }
 }
+
+export async function translateText(
+    textToTranslate: string,
+    inputLang: string,
+    outputLang: string
+): Promise<string> {
+    const prompt = `Translate the following text from ${inputLang} to ${outputLang}. Only provide the translated text, nothing else. Text: "${textToTranslate}"`;
+
+    console.log("📸 [translate] Prompt:", prompt);
+
+    const res = await fetch('/api-proxy/v1beta/models/gemini-2.5-flash:generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+        }),
+    });
+
+    console.log("📩 [translate] Status:", res.status);
+    const responseText = await res.text();
+
+    try {
+        const data = JSON.parse(responseText);
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        return text ? text.trim() : 'Translation failed.';
+    } catch (err) {
+        console.error("❌ [translate] JSON parse error", err);
+        return 'Translation error.';
+    }
+}

@@ -15,6 +15,11 @@ export interface Preferences {
     translation: number;
   };
   language: string;
+  translation: {
+    enabled: boolean;
+    inputLanguage: string;
+    outputLanguage: string;
+  };
 }
 
 export interface Message {

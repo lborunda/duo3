@@ -1,5 +1,5 @@
 {
-  "name": "DUO3 - IDPRO",
+  "name": "DUO4 - IDPRO",
   "description": "Conversational AI guide that brings the world around you to life. DUO uses your camera to see what you see, engaging you with rich descriptions and interactive dialogue. Touch the screen, use your voice, and explore the world like never before.",
   "requestFramePermissions": [
     "camera",
