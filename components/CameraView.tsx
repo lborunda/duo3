@@ -1,14 +1,16 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useCamera } from '../hooks/useCamera';
-import { BookOpenIcon, SettingsIcon } from './icons';
+import { BookOpenIcon, SettingsIcon, TranslateIcon } from './icons';
 
 interface CameraViewProps {
   onCapture: (imageData: string) => void;
   onViewChange: (view: 'tripBook' | 'settings') => void;
+  isTranslating: boolean;
+  onToggleTranslation: () => void;
 }
 
-export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onViewChange }) => {
+export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onViewChange, isTranslating, onToggleTranslation }) => {
   const { videoRef, isStreaming, startStream, stopStream, captureFrame, error } = useCamera(onCapture);
   
   useEffect(() => {
@@ -45,6 +47,13 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onViewChange 
 
       {/* Top right navigation buttons */}
       <div className="absolute top-5 right-5 z-20 flex flex-col gap-3 md:flex-row pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]">
+        <button
+            onClick={onToggleTranslation}
+            className={`backdrop-blur-md rounded-full p-3 text-white transition-all duration-300 ${isTranslating ? 'bg-maroon animate-pulse ring-2 ring-white/50' : 'bg-black/20 hover:bg-black/40'}`}
+            aria-label={isTranslating ? "Stop Translation" : "Start Live Translation"}
+        >
+            <TranslateIcon className="w-6 h-6" />
+        </button>
         <button
           onClick={() => onViewChange('tripBook')}
           className="bg-black/20 backdrop-blur-md rounded-full p-3 text-white hover:bg-black/40 transition-colors"

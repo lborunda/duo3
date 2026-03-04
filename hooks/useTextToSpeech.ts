@@ -89,26 +89,41 @@ export const useTextToSpeech = () => {
 
       // 4) Play
       try {
-        await el.play();
-      } catch (playErr: any) {
-        // These errors are expected when playback is cancelled
-        const isInterruption = 
-            playErr.name === 'AbortError' || 
-            playErr.message?.includes('interrupted') ||
-            playErr.message?.includes('load request');
-            
-        if (isInterruption) {
-          return;
+        const playPromise = el.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            // Auto-play was prevented or playback interrupted
+            // We swallow these errors as they are expected in this interactive context
+            const msg = error?.message || String(error);
+            if (
+                error?.name === 'AbortError' || 
+                error?.name === 'NotAllowedError' ||
+                msg.includes('interrupted') || 
+                msg.includes('load request')
+            ) {
+                return;
+            }
+            console.error("Playback failed:", error);
+          });
         }
-        throw playErr;
+      } catch (e) {
+        // Synchronous errors
       }
     } catch (err: any) {
       // Only handle errors if this is still the active request
       if (speechId === currentSpeechIdRef.current) {
+         const errorString = err?.message || String(err);
          // NotAllowedError: iOS blocked autoplay (user hasn’t tapped unlock yet)
         if (err && err.name === 'NotAllowedError') {
             console.warn('Audio blocked: tap "Enable sound" first.');
-        } else if (err && (err.name === 'AbortError' || err.message?.includes('interrupted') || err.message?.includes('load request'))) {
+        } else if (
+            err && (
+                err.name === 'AbortError' || 
+                errorString.includes('interrupted') || 
+                errorString.includes('load request') ||
+                errorString.includes('The play() request was interrupted')
+            )
+        ) {
             // Ignore
         } else {
             console.error('Failed to speak with ElevenLabs:', err);

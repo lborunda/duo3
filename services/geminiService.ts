@@ -65,7 +65,11 @@ export async function generateDescription(
   console.log("📸 [generate] Base64 length:", cleanedBase64.length);
   console.log("📸 [generate] Prompt:", prompt);
 
-  const res = await fetch('/api-proxy/v1beta/models/gemini-2.5-flash:generateContent', {
+  const url = preferences.geminiApiKey 
+    ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${preferences.geminiApiKey}`
+    : '/api-proxy/v1beta/models/gemini-2.5-flash:generateContent';
+
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -88,6 +92,16 @@ export async function generateDescription(
   console.log("📩 [generate] Status:", res.status);
   const responseText = await res.text();
   console.log("📩 [generate] Raw:", responseText);
+
+  if (!res.ok) {
+    console.error(`❌ [generate] API Error: ${res.status} ${res.statusText}`);
+    return 'I am having trouble connecting to my brain right now. Please try again.';
+  }
+
+  if (!responseText.trim()) {
+     console.error("❌ [generate] Empty response from API");
+     return 'I received an empty response. Please try again.';
+  }
 
   try {
     const data = JSON.parse(responseText);
@@ -128,7 +142,11 @@ Refer to the original image again and elaborate on the user's follow-up, using n
 
   console.log("📸 [follow-up] Prompt:", followUpPrompt);
 
-  const res = await fetch('/api-proxy/v1beta/models/gemini-2.5-flash:generateContent', {
+  const url = preferences.geminiApiKey 
+    ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${preferences.geminiApiKey}`
+    : '/api-proxy/v1beta/models/gemini-2.5-flash:generateContent';
+
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -152,6 +170,16 @@ Refer to the original image again and elaborate on the user's follow-up, using n
   const responseText = await res.text();
   console.log("📩 [follow-up] Raw:", responseText);
 
+  if (!res.ok) {
+    console.error(`❌ [follow-up] API Error: ${res.status} ${res.statusText}`);
+    return 'I am having trouble connecting to my brain right now. Please try again.';
+  }
+
+  if (!responseText.trim()) {
+     console.error("❌ [follow-up] Empty response from API");
+     return 'I received an empty response. Please try again.';
+  }
+
   try {
     const data = JSON.parse(responseText);
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -171,13 +199,18 @@ Refer to the original image again and elaborate on the user's follow-up, using n
 export async function translateText(
     textToTranslate: string,
     inputLang: string,
-    outputLang: string
+    outputLang: string,
+    apiKey?: string
 ): Promise<string> {
     const prompt = `Translate the following text from ${inputLang} to ${outputLang}. Only provide the translated text, nothing else. Text: "${textToTranslate}"`;
 
     console.log("📸 [translate] Prompt:", prompt);
 
-    const res = await fetch('/api-proxy/v1beta/models/gemini-2.5-flash:generateContent', {
+    const url = apiKey 
+        ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`
+        : '/api-proxy/v1beta/models/gemini-2.5-flash:generateContent';
+
+    const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -187,6 +220,16 @@ export async function translateText(
 
     console.log("📩 [translate] Status:", res.status);
     const responseText = await res.text();
+
+    if (!res.ok) {
+        console.error(`❌ [translate] API Error: ${res.status} ${res.statusText}`);
+        return 'Translation service unavailable.';
+    }
+
+    if (!responseText.trim()) {
+         console.error("❌ [translate] Empty response from API");
+         return 'Translation failed (empty response).';
+    }
 
     try {
         const data = JSON.parse(responseText);

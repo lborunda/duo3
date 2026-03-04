@@ -19,7 +19,9 @@ export interface Preferences {
     enabled: boolean;
     inputLanguage: string;
     outputLanguage: string;
+    depth?: number; // 0 (forefront/focused) to 1 (ambient/everything)
   };
+  geminiApiKey?: string;
 }
 
 export interface Message {

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Preferences } from '../types';
 import { RadarChart, capitalize } from './RadarChart';
+import { TranslateIcon } from './icons';
 
 interface PreferenceTunerProps {
   preferences: Preferences;
@@ -131,41 +132,33 @@ export const PreferenceTuner: React.FC<PreferenceTunerProps> = ({ preferences, o
 
       {/* Translation Settings */}
       <div>
-        <h3 className="text-lg font-bold text-stone-800 px-4">Translation</h3>
-        <p className="text-sm text-stone-500 mb-4 px-4">Configure live translation and language preferences.</p>
+        <h3 className="text-lg font-bold text-stone-800 px-4">Translation & Language</h3>
+        <p className="text-sm text-stone-500 mb-4 px-4">Configure languages and live translation focus.</p>
         
-        <div className="bg-white p-4 rounded-xl shadow space-y-4 mx-4">
-            <div className="flex items-center justify-between">
-                <span className="font-medium text-stone-700">Live Translation</span>
-                <button 
-                    onClick={() => onPreferencesChange({
-                        ...preferences,
-                        translation: { ...preferences.translation, enabled: !preferences.translation.enabled }
-                    })}
-                    className={`w-12 h-6 rounded-full transition-colors duration-200 ease-in-out relative ${preferences.translation?.enabled ? 'bg-orange-500' : 'bg-stone-300'}`}
-                >
-                    <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform duration-200 ${preferences.translation?.enabled ? 'left-7' : 'left-1'}`}></div>
-                </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white p-6 rounded-xl shadow space-y-6 mx-4 border-l-4 border-maroon">
+            
+            {/* Global Language Settings - Always Visible */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-xs font-semibold text-stone-500 mb-1">Input Language (Mic)</label>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-1">Input Language (I hear)</label>
                     <select 
                         value={preferences.translation?.inputLanguage || 'en-US'}
                         onChange={(e) => onPreferencesChange({
                             ...preferences,
                             translation: { ...preferences.translation, inputLanguage: e.target.value }
                         })}
-                        className="w-full p-2 rounded-lg border border-stone-200 bg-stone-50 text-sm"
+                        className="w-full p-2.5 rounded-lg border border-stone-300 bg-white text-stone-800 text-sm focus:ring-2 focus:ring-maroon focus:border-maroon outline-none transition-shadow"
                     >
                         <option value="en-US">English</option>
                         <option value="es-ES">Spanish</option>
                         <option value="it-IT">Italian</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="ja-JP">Japanese</option>
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-semibold text-stone-500 mb-1">Output Language (DUO)</label>
+                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-1">Output Language (I speak)</label>
                     <select 
                         value={preferences.translation?.outputLanguage || 'en-US'}
                         onChange={(e) => onPreferencesChange({
@@ -173,14 +166,77 @@ export const PreferenceTuner: React.FC<PreferenceTunerProps> = ({ preferences, o
                             language: e.target.value, // Sync main language
                             translation: { ...preferences.translation, outputLanguage: e.target.value }
                         })}
-                        className="w-full p-2 rounded-lg border border-stone-200 bg-stone-50 text-sm"
+                        className="w-full p-2.5 rounded-lg border border-stone-300 bg-white text-stone-800 text-sm focus:ring-2 focus:ring-maroon focus:border-maroon outline-none transition-shadow"
                     >
                         <option value="en-US">English</option>
                         <option value="es-ES">Spanish</option>
                         <option value="it-IT">Italian</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="ja-JP">Japanese</option>
                     </select>
                 </div>
             </div>
+
+            <hr className="border-stone-100" />
+
+            {/* Live Translation Toggle & Depth */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="font-medium text-stone-800 text-base">Live Translation</p>
+                        <p className="text-xs text-stone-500">Real-time audio translation</p>
+                    </div>
+                    
+                    <button
+                        onClick={() => onPreferencesChange({
+                            ...preferences,
+                            translation: { ...preferences.translation, enabled: !preferences.translation.enabled }
+                        })}
+                        className={`p-3 rounded-full transition-all duration-300 ${preferences.translation?.enabled ? 'bg-maroon text-white shadow-md ring-2 ring-maroon/20' : 'bg-stone-100 text-stone-400 hover:bg-stone-200'}`}
+                        aria-label={preferences.translation?.enabled ? "Disable Live Translation" : "Enable Live Translation"}
+                    >
+                        <TranslateIcon className="w-6 h-6" />
+                    </button>
+                </div>
+
+                {preferences.translation?.enabled && (
+                    <div className="animate-fadeIn pt-2">
+                         <LabeledSlider
+                            emoji="🎚️"
+                            label="Listening Focus"
+                            min={0}
+                            max={1}
+                            value={preferences.translation?.depth ?? 0.5}
+                            leftLabel="Forefront Only"
+                            rightLabel="Everything"
+                            onChange={(v) => onPreferencesChange({
+                                ...preferences,
+                                translation: { ...preferences.translation, depth: v }
+                            })}
+                        />
+                        <p className="text-xs text-stone-400 text-center mt-2 max-w-xs mx-auto">
+                            Adjust to filter out background noise (Forefront) or translate all ambient conversations (Everything).
+                        </p>
+                    </div>
+                )}
+            </div>
+        </div>
+      </div>
+
+      {/* API Key Override */}
+      <div>
+        <h3 className="text-lg font-bold text-stone-800 px-4">API Key Override</h3>
+        <p className="text-sm text-stone-500 mb-4 px-4">Enter your own Gemini API key to override the default.</p>
+        <div className="bg-white p-4 rounded-xl shadow mx-4">
+            <input
+                type="password"
+                placeholder="Enter Gemini API Key"
+                value={preferences.geminiApiKey || ''}
+                onChange={(e) => onPreferencesChange({ ...preferences, geminiApiKey: e.target.value })}
+                className="w-full p-3 rounded-lg border border-stone-200 bg-stone-50 text-sm font-mono"
+            />
+            <p className="text-xs text-stone-400 mt-2">Leave empty to use the default system key.</p>
         </div>
       </div>
     </div>

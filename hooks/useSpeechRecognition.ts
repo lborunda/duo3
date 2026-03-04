@@ -57,16 +57,24 @@ export const useSpeechRecognition = () => {
 
   const startListening = useCallback(() => {
     if (recognitionRef.current && !isListening) {
-      setTranscript('');
-      recognitionRef.current.start();
-      setIsListening(true);
+      try {
+        setTranscript('');
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (e) {
+        console.warn("Failed to start speech recognition:", e);
+      }
     }
   }, [isListening]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
+      try {
+        recognitionRef.current.stop();
+        setIsListening(false);
+      } catch (e) {
+        console.warn("Failed to stop speech recognition:", e);
+      }
     }
   }, [isListening]);
 

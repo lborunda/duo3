@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --color-maroon: #861F41;
+}
+
+:root {
+  --vt-maroon: #861F41;
+}
+
 @layer base {
   body {
     -webkit-user-select: none; /* Safari */

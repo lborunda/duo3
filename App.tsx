@@ -6,7 +6,7 @@ import { ResponseDisplay } from './components/ResponseDisplay';
 import { Notification } from './components/Notification';
 import { WelcomeOverlay } from './components/WelcomeOverlay';
 import { SettingsView } from './components/SettingsView';
-import { generateDescription, getFollowUpDescription } from './services/geminiService';
+import { generateDescription, getFollowUpDescription, translateText } from './services/geminiService';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { useTextToSpeech } from './hooks/useTextToSpeech';
 import type { Trip, TripHighlight, Preferences, Message } from './types';
@@ -16,6 +16,7 @@ export default function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [view, setView] = useState<'camera' | 'tripBook' | 'settings'>('camera');
   const [isLoading, setIsLoading] = useState(false);
+  // Removed local isTranslating state in favor of preferences.translation.enabled
   
   // ... existing state ...
   const [conversation, setConversation] = useState<Message[]>([]);
@@ -43,6 +44,7 @@ export default function App() {
       inputLanguage: 'en-US',
       outputLanguage: 'en-US',
     },
+    geminiApiKey: '',
   });
   const [notification, setNotification] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -99,13 +101,15 @@ export default function App() {
   // 🎙️ existing voice follow-ups (camera flow)
   useEffect(() => {
     if (transcript) {
-      if (conversation.length > 0) {
+      if (preferences.translation.enabled) {
+        handleTranslation(transcript);
+      } else if (conversation.length > 0) {
         handleFollowUp(transcript, 'voice');
       } else {
         showNotification("Please capture an image before asking questions.");
       }
     }
-  }, [transcript]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [transcript, preferences.translation.enabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSavePreferences = useCallback((newPreferences: Preferences) => {
     setPreferences(newPreferences);
@@ -121,6 +125,51 @@ export default function App() {
       speak(trimmed, preferences.language, preferences.personality.voiceSpeed).catch(console.error);
     }
   }, [isMuted, speak, preferences]);
+
+  const handleTranslation = useCallback(async (text: string) => {
+      if (isLoading) return;
+      setIsLoading(true);
+      try {
+          const translated = await translateText(
+            text, 
+            preferences.translation.inputLanguage, 
+            preferences.translation.outputLanguage, 
+            preferences.geminiApiKey
+          );
+          setConversation(prev => [...prev, { role: 'user', text: `[Translating] ${text}` }]);
+          handleApiResponse(translated);
+      } catch (e) {
+          console.error(e);
+          handleApiResponse("Translation failed.");
+      } finally {
+          setIsLoading(false);
+      }
+  }, [preferences, isLoading, handleApiResponse]);
+
+  const handleToggleTranslation = useCallback(() => {
+    const newEnabled = !preferences.translation.enabled;
+    const newPrefs = {
+        ...preferences,
+        translation: { ...preferences.translation, enabled: newEnabled }
+    };
+    setPreferences(newPrefs);
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(newPrefs));
+    
+    if (newEnabled) {
+        startListening();
+    } else {
+        stopListening();
+    }
+  }, [preferences, startListening, stopListening]);
+
+  // Manage listening state based on view and preferences
+  useEffect(() => {
+    if (view === 'camera' && preferences.translation.enabled) {
+        startListening();
+    } else {
+        stopListening();
+    }
+  }, [view, preferences.translation.enabled, startListening, stopListening]);
 
   const handleCapture = useCallback(async (imageData: string) => {
     setConversation([]);
@@ -254,7 +303,14 @@ export default function App() {
   const renderView = () => {
     switch (view) {
       case 'camera':
-        return <CameraView onCapture={handleCapture} onViewChange={setView} />;
+        return (
+          <CameraView 
+            onCapture={handleCapture} 
+            onViewChange={setView}
+            isTranslating={preferences.translation.enabled}
+            onToggleTranslation={handleToggleTranslation}
+          />
+        );
       case 'tripBook':
         return (
           <TripBookView
@@ -313,6 +369,9 @@ export default function App() {
             onToggleMute={handleToggleMute}
             onToggleListening={handleToggleListening}
             isListening={isListening}
+            isTranslating={preferences.translation.enabled}
+            onToggleTranslation={handleToggleTranslation}
+            translationEnabled={preferences.translation.enabled}
           />
         )}
 

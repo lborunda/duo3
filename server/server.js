@@ -12,7 +12,13 @@ const multer = require('multer');
 // ===== Basics =====
 const app = express();
 const port = process.env.PORT || 8080;
-const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY; // either var works
+
+const apiKey =
+  process.env.GEMINI_API_KEY2 ||
+  process.env.GEMINI_API_KEY ||
+  process.env.API_KEY;
+
+
 const externalApiBaseUrl = 'https://generativelanguage.googleapis.com';
 const externalWsBaseUrl  = 'wss://generativelanguage.googleapis.com';
 

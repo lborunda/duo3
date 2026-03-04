@@ -57,9 +57,9 @@ export const TripListView: React.FC<TripListViewProps> = ({
                 value={newTripName}
                 onChange={(e) => setNewTripName(e.target.value)}
                 placeholder="New trip name, e.g. 'Paris 2024'"
-                className="flex-grow p-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                className="flex-grow p-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-maroon focus:outline-none"
             />
-            <button onClick={handleCreate} className="bg-orange-500 text-white font-bold py-3 px-5 rounded-lg hover:bg-orange-600 transition-colors">
+            <button onClick={handleCreate} className="bg-maroon text-white font-bold py-3 px-5 rounded-lg hover:bg-maroon/90 transition-colors">
                 Create
             </button>
         </div>

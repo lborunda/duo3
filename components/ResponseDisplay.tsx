@@ -24,34 +24,29 @@ interface ResponseDisplayProps {
 
 const Typewriter = ({ text, className, onComplete }: { text: string; className?: string; onComplete?: () => void }) => {
   const [displayedText, setDisplayedText] = useState('');
-  const charIndex = useRef(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!text) return;
+    if (!text) {
+        setDisplayedText('');
+        return;
+    }
 
+    const chars = Array.from(text);
+    let i = 0;
     setDisplayedText('');
-    charIndex.current = 0;
 
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    const intervalId = setInterval(() => {
+      if (i < chars.length) {
+        const char = chars[i];
+        setDisplayedText(prev => prev + char);
+        i++;
+      } else {
+        clearInterval(intervalId);
+        if (onComplete) onComplete();
+      }
+    }, 20);
 
-    intervalRef.current = setInterval(() => {
-      setDisplayedText(prev => {
-        if (charIndex.current < text.length) {
-          const nextChar = text[charIndex.current];
-          charIndex.current += 1;
-          return prev + nextChar;
-        } else {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          if (onComplete) onComplete();
-          return prev;
-        }
-      });
-    }, 30);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => clearInterval(intervalId);
   }, [text, onComplete]);
 
   return (
@@ -78,7 +73,8 @@ const LoadingSkeleton = () => (
 const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
 
 export const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
-  isLoading, conversation, lastCapture, isMuted, onSave, onClear, onFollowUp, onToggleMute, onToggleListening, isListening
+  isLoading, conversation, lastCapture, isMuted, onSave, onClear, onFollowUp, onToggleMute, onToggleListening, isListening,
+  isTranslating, onToggleTranslation, translationEnabled
 }) => {
   const imageInteractionContainerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -465,7 +461,7 @@ export const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
             {translationEnabled && (
                 <button
                     onClick={onToggleTranslation}
-                    className={`flex-shrink-0 font-bold py-3 px-4 rounded-lg transition-colors ${isTranslating ? 'bg-blue-500 animate-pulse text-white' : 'bg-stone-200/20 text-white hover:bg-stone-200/40'}`}
+                    className={`flex-shrink-0 font-bold py-3 px-4 rounded-lg transition-colors ${isTranslating ? 'bg-maroon animate-pulse text-white ring-2 ring-white/50' : 'bg-stone-200/20 text-white hover:bg-stone-200/40'}`}
                     disabled={isLoading}
                 >
                     <TranslateIcon className="w-5 h-5" />
